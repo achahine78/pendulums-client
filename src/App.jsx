@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
 import { pendulumsInitialState } from "./constants/pendulums";
 import Canvas from "./components/Canvas";
-import ControlPanel from "./components/ControlPanel";
-import axios from 'axios';
+import Controls from "./components/Controls";
+import axios from "axios";
 
 function App() {
   const [pendulums, setPendulums] = useState(pendulumsInitialState);
@@ -58,16 +58,18 @@ function App() {
 
   return (
     <div>
-      <button onClick={() => runSimulations()}>Start</button>
-      <div>
-        {pendulums.map((pendulum) => (
-          <ControlPanel
-            pendulum={pendulum}
-            updatePendulum={updatePendulum}
-            key={pendulum.id}
-          />
-        ))}
-      </div>
+      <Controls
+        pendulums={pendulums}
+        updatePendulum={updatePendulum}
+        isSimulating={isSimulating}
+        buttons={[
+          {
+            id: 0,
+            text: "Start",
+            clickHandler: () => runSimulations(),
+          },
+        ]}
+      />
       <Canvas pendulums={pendulums} />
     </div>
   );

@@ -2,7 +2,7 @@ import { Slider, Card } from "antd";
 
 const ControlPanel = ({ pendulum, updatePendulum }) => {
   return (
-    <Card style={{ width: 300 }} title={`Pendulum ${pendulum.id}`}>
+    <Card style={{ width: 250 }} title={`Pendulum ${pendulum.id}`}>
       <div>
         Initial angle
         <Slider
