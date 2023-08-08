@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { pendulumsInitialState } from "./constants/pendulums";
 import Canvas from "./components/Canvas";
 import Controls from "./components/Controls";
@@ -56,6 +56,26 @@ function App() {
       });
   };
 
+  const pauseSimulation = () => {
+    const promises = pendulums.map((pendulum) =>
+      axios.post(`http://localhost:300${pendulum.id}/pause`).catch((err) => {
+        console.log(err);
+      })
+    );
+    Promise.all(promises).then((responses) => {
+      const data = responses.map((response) => response.data);
+      console.log(data);
+    });
+  };
+
+  const resetPendulums = () => {
+    pendulums.forEach((pendulum) =>
+      axios.post(`http://localhost:300${pendulum.id}/reset`)
+    );
+  };
+
+  useEffect(resetPendulums, []);
+
   return (
     <div>
       <Controls
@@ -67,6 +87,11 @@ function App() {
             id: 0,
             text: "Start",
             clickHandler: () => runSimulations(),
+          },
+          {
+            id: 1,
+            text: "Pause",
+            clickHandler: () => pauseSimulation(),
           },
         ]}
       />
