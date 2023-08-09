@@ -11,10 +11,12 @@ const Controls = ({ pendulums, buttons, updatePendulum, isSimulating }) => {
         ))}
       </Row>
       <Row
-        style={{ marginTop: "16px", marginBottom: "16px" }}
-        className={`controls-control-panels-container ${
-          isSimulating ? "controls-control-panels-container-disabled" : ""
-        }`}
+        style={{
+          marginTop: "16px",
+          marginBottom: "16px",
+          pointerEvents: isSimulating ? "none" : "",
+          opacity: isSimulating ? "0.5" : "1",
+        }}
       >
         {pendulums.map((pendulum) => (
           <Col key={pendulum.id} style={{ marginRight: "16px" }}>
