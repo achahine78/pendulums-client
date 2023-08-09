@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { pendulumsInitialState } from "./constants/pendulums";
 import Canvas from "./components/Canvas";
 import Controls from "./components/Controls";
@@ -11,20 +11,23 @@ function App() {
   const currentSimulationInterval = useRef();
   const [messageApi, contextHolder] = message.useMessage();
 
-  const updatePendulum = (newPendulum) => {
-    const newPendulums = pendulums.map((pendulum) => {
-      if (newPendulum.id === pendulum.id) {
-        return {
-          ...newPendulum,
-        };
-      }
+  const updatePendulum = useCallback(
+    (newPendulum) => {
+      const newPendulums = pendulums.map((pendulum) => {
+        if (newPendulum.id === pendulum.id) {
+          return {
+            ...newPendulum,
+          };
+        }
 
-      return pendulum;
-    });
-    setPendulums(newPendulums);
-  };
+        return pendulum;
+      });
+      setPendulums(newPendulums);
+    },
+    [pendulums]
+  );
 
-  const handleMessages = (responses) => {
+  const handleMessages = useCallback((responses) => {
     responses.forEach(({ data }) => {
       if (data.message) {
         messageApi.open({
@@ -33,9 +36,9 @@ function App() {
         });
       }
     });
-  };
+  }, []);
 
-  const runSimulations = () => {
+  const runSimulations = useCallback(() => {
     setIsSimulating(true);
     clearInterval(currentSimulationInterval.current);
     const promises = pendulums.map((pendulum) =>
@@ -68,9 +71,9 @@ function App() {
       .catch((err) => {
         console.log(err);
       });
-  };
+  }, [pendulums]);
 
-  const pauseSimulation = () => {
+  const pauseSimulation = useCallback(() => {
     const promises = pendulums.map((pendulum) =>
       axios.post(`http://localhost:300${pendulum.id}/pause`).catch((err) => {
         console.log(err);
@@ -79,13 +82,18 @@ function App() {
     Promise.all(promises).then((responses) => {
       handleMessages(responses);
     });
-  };
+  }, []);
 
-  const resetPendulums = () => {
-    pendulums.forEach((pendulum) =>
+  const resetPendulums = useCallback(() => {
+    clearInterval(currentSimulationInterval.current);
+    const promises = pendulums.map((pendulum) =>
       axios.post(`http://localhost:300${pendulum.id}/reset`)
     );
-  };
+    Promise.all(promises).then((responses) => {
+      setIsSimulating(false);
+      setPendulums(pendulumsInitialState);
+    });
+  }, []);
 
   useEffect(resetPendulums, []);
 
@@ -106,6 +114,11 @@ function App() {
             id: 1,
             text: "Pause",
             clickHandler: () => pauseSimulation(),
+          },
+          {
+            id: 2,
+            text: "Reset",
+            clickHandler: () => resetPendulums(),
           },
         ]}
       />
