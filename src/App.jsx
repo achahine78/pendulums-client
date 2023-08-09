@@ -3,11 +3,13 @@ import { pendulumsInitialState } from "./constants/pendulums";
 import Canvas from "./components/Canvas";
 import Controls from "./components/Controls";
 import axios from "axios";
+import { message } from "antd";
 
 function App() {
   const [pendulums, setPendulums] = useState(pendulumsInitialState);
   const [isSimulating, setIsSimulating] = useState(false);
   const currentSimulationInterval = useRef();
+  const [messageApi, contextHolder] = message.useMessage();
 
   const updatePendulum = (newPendulum) => {
     const newPendulums = pendulums.map((pendulum) => {
@@ -20,6 +22,17 @@ function App() {
       return pendulum;
     });
     setPendulums(newPendulums);
+  };
+
+  const handleMessages = (responses) => {
+    responses.forEach(({ data }) => {
+      if (data.message) {
+        messageApi.open({
+          type: "success",
+          content: data.message,
+        });
+      }
+    });
   };
 
   const runSimulations = () => {
@@ -35,7 +48,8 @@ function App() {
     );
 
     Promise.all(promises)
-      .then(() => {
+      .then((responses) => {
+        handleMessages(responses);
         currentSimulationInterval.current = setInterval(() => {
           const otherPromises = pendulums.map((pendulum) =>
             axios.get(`http://localhost:300${pendulum.id}/position`)
@@ -63,8 +77,7 @@ function App() {
       })
     );
     Promise.all(promises).then((responses) => {
-      const data = responses.map((response) => response.data);
-      console.log(data);
+      handleMessages(responses);
     });
   };
 
@@ -78,6 +91,7 @@ function App() {
 
   return (
     <div>
+      {contextHolder}
       <Controls
         pendulums={pendulums}
         updatePendulum={updatePendulum}
